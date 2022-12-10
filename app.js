@@ -23,6 +23,10 @@ app.use('/users', userRouter);
 
 app.use('/cards', cardRouter);
 
+// app.use('*', (req, res) => {
+//   res.status(404);
+// });
+
 mongoose.connect('mongodb://127.0.0.1/mestodb', {
   useNewUrlParser: true,
 }, () => {
