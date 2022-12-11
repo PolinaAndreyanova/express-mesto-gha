@@ -23,9 +23,9 @@ app.use('/users', userRouter);
 
 app.use('/cards', cardRouter);
 
-// app.use('*', (req, res) => {
-//   res.status(404);
-// });
+app.use('*', (req, res) => {
+  res.status(404).send({ message: 'Путь не найден' });
+});
 
 mongoose.connect('mongodb://127.0.0.1/mestodb', {
   useNewUrlParser: true,

@@ -11,11 +11,21 @@ const getUser = (req, res) => {
 
   User.findById(_id)
     .then((user) => {
-      if (user === null) res.status(404).send({ message: 'Пользователь не найден' });
+      if (user === null) {
+        res.status(404).send({ message: 'Пользователь не найден' });
+        return;
+      }
 
       res.status(200).send(user);
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        res.status(404).send({ message: 'Пользователь не найден' });
+        return;
+      }
+
+      res.status(500).send({ message: 'Произошла ошибка' });
+    });
 };
 
 const createUser = (req, res) => {
@@ -23,7 +33,14 @@ const createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.status(201).send(user))
-    .catch(res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+        return;
+      }
+
+      res.status(500).send({ message: 'Произошла ошибка' });
+    });
 };
 
 const updateUserInfo = (req, res) => {
@@ -32,7 +49,13 @@ const updateUserInfo = (req, res) => {
 
   User.findByIdAndUpdate(_id, { name, about }, { new: true, runValidators: true })
     .then((user) => res.status(200).send(user))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+        return;
+      }
+      res.status(500).send({ message: 'Произошла ошибка' });
+    });
 };
 
 const updateUserAvatar = (req, res) => {
