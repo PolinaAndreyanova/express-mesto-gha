@@ -20,7 +20,7 @@ const getUser = (req, res) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(400).send({ message: 'Пользователь не найден' });
         return;
       }
 
