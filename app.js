@@ -27,12 +27,12 @@ app.use('*', (req, res) => {
   res.status(404).send({ message: 'Путь не найден' });
 });
 
-mongoose.connect('mongodb://127.0.0.1/mestodb', {
-  useNewUrlParser: true,
-}, () => {
-  console.log('Connected to MongoDB!');
+mongoose.connect('mongodb://127.0.0.1/mestodb', { useNewUrlParser: true })
+  .then(() => {
+    console.log('Connected to MongoDB!');
 
-  app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`);
-  });
-});
+    app.listen(PORT, () => {
+      console.log(`App listening on port ${PORT}`);
+    });
+  })
+  .catch((error) => console.log(error));
