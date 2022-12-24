@@ -3,6 +3,7 @@ const {
   SUCCESS_OK_CODE,
   SUCCESS_CREATED_CODE,
   BAD_REQUEST_ERROR_CODE,
+  FORBIDDEN_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   INTERNAL_SERVER_ERROR_CODE,
 } = require('../utils/constants');
@@ -32,8 +33,7 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   const _id = req.params.cardId;
-
-  Card.findByIdAndRemove(_id)
+  Card.findById(_id)
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
@@ -41,7 +41,16 @@ const deleteCard = (req, res) => {
         return;
       }
 
-      res.status(SUCCESS_OK_CODE).send(card);
+      if (card.owner._id.toString() !== req.user._id) {
+        res.status(FORBIDDEN_ERROR_CODE).send({ message: 'Доступ запрещён' });
+        return;
+      }
+
+      Card.findByIdAndRemove(_id)
+        .populate(['owner', 'likes'])
+        .then(() => {
+          res.status(SUCCESS_OK_CODE).send(card);
+        });
     })
     .catch((error) => {
       if (error.name === 'CastError') {

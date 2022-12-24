@@ -1,8 +1,11 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
   SUCCESS_OK_CODE,
   SUCCESS_CREATED_CODE,
   BAD_REQUEST_ERROR_CODE,
+  UNAUTHORIZED_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   INTERNAL_SERVER_ERROR_CODE,
 } = require('../utils/constants');
@@ -35,19 +38,54 @@ const getUser = (req, res) => {
     });
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+const getMe = (req, res) => {
+  const { _id } = req.user;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.status(SUCCESS_CREATED_CODE).send(user))
+  User.findById(_id)
+    .then((user) => {
+      if (user === null) {
+        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь не найден' });
+        return;
+      }
+
+      res.status(SUCCESS_OK_CODE).send(user);
+    })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        res.status(BAD_REQUEST_ERROR_CODE).send({ message: 'Переданы некорректные данные' });
+      if (error.name === 'CastError') {
+        res.status(BAD_REQUEST_ERROR_CODE).send({ message: 'Пользователь не найден' });
         return;
       }
 
       res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
     });
+};
+
+const createUser = (req, res) => {
+  const {
+    email,
+    password,
+    name,
+    about,
+    avatar,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email,
+      password: hash,
+      name,
+      about,
+      avatar,
+    })
+      .then((user) => res.status(SUCCESS_CREATED_CODE).send(user))
+      .catch((error) => {
+        if (error.name === 'ValidationError') {
+          res.status(BAD_REQUEST_ERROR_CODE).send({ message: 'Переданы некорректные данные' });
+          return;
+        }
+
+        res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
+      }));
 };
 
 const updateUserInfo = (req, res) => {
@@ -95,10 +133,37 @@ const updateUserAvatar = (req, res) => {
     });
 };
 
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (user === null) {
+        res.status(UNAUTHORIZED_ERROR_CODE).send({ message: 'Неправильные почта или пароль' });
+        return;
+      }
+
+      bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            res.status(UNAUTHORIZED_ERROR_CODE).send({ message: 'Неправильные почта или пароль' });
+            return;
+          }
+
+          const token = jwt.sign({ _id: user._id }, 'secret-token-key', { expiresIn: '7d' });
+
+          res.status(SUCCESS_OK_CODE).send({ jwt: token });
+        });
+    })
+    .catch(() => res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' }));
+};
+
 module.exports = {
   getUsers,
   getUser,
+  getMe,
   createUser,
   updateUserInfo,
   updateUserAvatar,
+  login,
 };
