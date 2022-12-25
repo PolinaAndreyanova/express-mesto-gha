@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const { errors } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 
 const userRouter = require('./routes/user');
 const cardRouter = require('./routes/card');
@@ -23,7 +23,15 @@ app.use('/users', checkAuth, userRouter);
 app.use('/cards', checkAuth, cardRouter);
 
 app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string(),
+  }),
+}), createUser);
 
 app.use('*', (req, res) => {
   res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Путь не найден' });
