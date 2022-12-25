@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 
 const userRouter = require('./routes/user');
 const cardRouter = require('./routes/card');
@@ -28,8 +29,11 @@ app.use('*', (req, res) => {
   res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Путь не найден' });
 });
 
+app.use(errors());
+
 app.use((err, req, res, next) => {
   res.status(err.statusCode).send({ message: err.message });
+  next();
 });
 
 mongoose.connect('mongodb://127.0.0.1/mestodb', { useNewUrlParser: true })
