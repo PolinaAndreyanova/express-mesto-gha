@@ -22,15 +22,20 @@ app.use('/users', checkAuth, userRouter);
 
 app.use('/cards', checkAuth, cardRouter);
 
-app.post('/signin', login);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }).unknown(true),
+}), login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
-  }),
+    avatar: Joi.string().uri(),
+  }).unknown(true),
 }), createUser);
 
 app.use('*', (req, res) => {
