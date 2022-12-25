@@ -28,6 +28,10 @@ app.use('*', (req, res) => {
   res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Путь не найден' });
 });
 
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.message });
+});
+
 mongoose.connect('mongodb://127.0.0.1/mestodb', { useNewUrlParser: true })
   .then(() => {
     console.log('Connected to MongoDB!');

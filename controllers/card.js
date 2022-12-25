@@ -1,21 +1,23 @@
 const Card = require('../models/card');
-const {
-  SUCCESS_OK_CODE,
-  SUCCESS_CREATED_CODE,
-  BAD_REQUEST_ERROR_CODE,
-  FORBIDDEN_ERROR_CODE,
-  NOT_FOUND_ERROR_CODE,
-  INTERNAL_SERVER_ERROR_CODE,
-} = require('../utils/constants');
 
-const getCards = (req, res) => {
+const { SUCCESS_OK_CODE, SUCCESS_CREATED_CODE } = require('../utils/constants');
+
+const BadRequestError = require('../errors/bad-request-error');
+const ForbiddenError = require('../errors/forbidden-error');
+const InternalServerError = require('../errors/internal-server-error');
+const NotFoundError = require('../errors/not-found-error');
+
+const getCards = (req, res, next) => {
   Card.find({})
     .populate(['owner', 'likes'])
     .then((cards) => res.status(SUCCESS_OK_CODE).send(cards))
-    .catch(() => res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' }));
+    .catch(() => {
+      throw new InternalServerError('Произошла ошибка');
+    })
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const { _id } = req.user;
 
@@ -23,27 +25,25 @@ const createCard = (req, res) => {
     .then((card) => res.status(SUCCESS_CREATED_CODE).send(card))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        res.status(BAD_REQUEST_ERROR_CODE).send({ message: 'Переданы некорректные данные' });
-        return;
+        throw new BadRequestError('Переданы некорректные данные');
       }
 
-      res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
-    });
+      throw new InternalServerError('Произошла ошибка');
+    })
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const _id = req.params.cardId;
   Card.findById(_id)
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Карточка не найдена' });
-        return;
+        throw new NotFoundError('Карточка не найдена');
       }
 
       if (card.owner._id.toString() !== req.user._id) {
-        res.status(FORBIDDEN_ERROR_CODE).send({ message: 'Доступ запрещён' });
-        return;
+        throw new ForbiddenError('Доступ запрещён');
       }
 
       Card.findByIdAndRemove(_id)
@@ -54,58 +54,56 @@ const deleteCard = (req, res) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        res.status(BAD_REQUEST_ERROR_CODE).send({ message: 'Карточка не найдена' });
-        return;
+        throw new BadRequestError('Карточка не найдена');
       }
 
-      res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
-    });
+      throw new InternalServerError('Произошла ошибка');
+    })
+    .catch(next);
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const _id = req.params.cardId;
 
   Card.findByIdAndUpdate(_id, { $addToSet: { likes: req.user._id } }, { new: true })
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Карточка не найдена' });
-        return;
+        throw new NotFoundError('Карточка не найдена');
       }
 
       res.status(SUCCESS_OK_CODE).send(card);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        res.status(BAD_REQUEST_ERROR_CODE).send({ message: 'Карточка не найдена' });
-        return;
+        throw new BadRequestError('Карточка не найдена');
       }
 
-      res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
-    });
+      throw new InternalServerError('Произошла ошибка');
+    })
+    .catch(next);
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const _id = req.params.cardId;
 
   Card.findByIdAndUpdate(_id, { $pull: { likes: req.user._id } }, { new: true })
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Карточка не найдена' });
-        return;
+        throw new NotFoundError('Карточка не найдена');
       }
 
       res.status(SUCCESS_OK_CODE).send(card);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        res.status(BAD_REQUEST_ERROR_CODE).send({ message: 'Карточка не найдена' });
-        return;
+        throw new BadRequestError('Карточка не найдена');
       }
 
-      res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
-    });
+      throw new InternalServerError('Произошла ошибка');
+    })
+    .catch(next);
 };
 
 module.exports = {
