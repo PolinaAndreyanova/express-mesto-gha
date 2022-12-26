@@ -13,9 +13,8 @@ const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(SUCCESS_OK_CODE).send(users))
     .catch(() => {
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const getUser = (req, res, next) => {
@@ -24,19 +23,18 @@ const getUser = (req, res, next) => {
   User.findById(_id)
     .then((user) => {
       if (user === null) {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        throw new BadRequestError('Пользователь не найден');
+        next(new BadRequestError('Пользователь не найден'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const getMe = (req, res, next) => {
@@ -45,19 +43,18 @@ const getMe = (req, res, next) => {
   User.findById(_id)
     .then((user) => {
       if (user === null) {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        throw new BadRequestError('Пользователь не найден');
+        next(new BadRequestError('Пользователь не найден'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const createUser = (req, res, next) => {
@@ -80,12 +77,11 @@ const createUser = (req, res, next) => {
       .then((user) => res.status(SUCCESS_CREATED_CODE).send(user))
       .catch((error) => {
         if (error.name === 'ValidationError') {
-          throw new BadRequestError('Переданы некорректные данные');
+          next(new BadRequestError('Переданы некорректные данные'));
         }
 
-        throw new InternalServerError('Произошла ошибка');
-      })
-      .catch(next));
+        next(new InternalServerError('Произошла ошибка'));
+      }));
 };
 
 const updateUserInfo = (req, res, next) => {
@@ -95,19 +91,18 @@ const updateUserInfo = (req, res, next) => {
   User.findByIdAndUpdate(_id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user === null) {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
+        next(new BadRequestError('Переданы некорректные данные'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const updateUserAvatar = (req, res, next) => {
@@ -117,19 +112,18 @@ const updateUserAvatar = (req, res, next) => {
   User.findByIdAndUpdate(_id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (user === null) {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
+        next(new BadRequestError('Переданы некорректные данные'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const login = (req, res, next) => {
@@ -138,24 +132,26 @@ const login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (user === null) {
-        throw new UnauthorizedError('Неправильные почта или пароль');
+        next(new UnauthorizedError('Неправильные почта или пароль'));
       }
 
       bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new UnauthorizedError('Неправильные почта или пароль');
+            next(new UnauthorizedError('Неправильные почта или пароль'));
           }
 
           const token = jwt.sign({ _id: user._id }, 'secret-token-key', { expiresIn: '7d' });
 
           res.status(SUCCESS_OK_CODE).send({ jwt: token });
+        })
+        .catch(() => {
+          next(new InternalServerError('Произошла ошибка'));
         });
     })
     .catch(() => {
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 module.exports = {

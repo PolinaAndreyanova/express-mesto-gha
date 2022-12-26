@@ -26,8 +26,9 @@ app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
-  }).unknown(true),
+  }),
 }), login);
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -35,7 +36,7 @@ app.post('/signup', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string(),
-  }).unknown(true),
+  }),
 }), createUser);
 
 app.use('*', (req, res) => {
@@ -45,7 +46,9 @@ app.use('*', (req, res) => {
 app.use(errors());
 
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.message });
+  const { statusCode = 500, message } = err;
+
+  res.status(statusCode).send({ message: statusCode === 500 ? 'Произошла ошибка' : message });
   next();
 });
 

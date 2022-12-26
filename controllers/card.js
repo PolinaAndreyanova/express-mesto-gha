@@ -12,9 +12,8 @@ const getCards = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((cards) => res.status(SUCCESS_OK_CODE).send(cards))
     .catch(() => {
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const createCard = (req, res, next) => {
@@ -25,12 +24,11 @@ const createCard = (req, res, next) => {
     .then((card) => res.status(SUCCESS_CREATED_CODE).send(card))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
+        next(new BadRequestError('Переданы некорректные данные'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const deleteCard = (req, res, next) => {
@@ -39,11 +37,11 @@ const deleteCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
-        throw new NotFoundError('Карточка не найдена');
+        next(new NotFoundError('Карточка не найдена'));
       }
 
       if (card.owner._id.toString() !== req.user._id) {
-        throw new ForbiddenError('Доступ запрещён');
+        next(new ForbiddenError('Доступ запрещён'));
       }
 
       Card.findByIdAndRemove(_id)
@@ -54,12 +52,11 @@ const deleteCard = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        throw new BadRequestError('Карточка не найдена');
+        next(new BadRequestError('Карточка не найдена'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const likeCard = (req, res, next) => {
@@ -69,19 +66,18 @@ const likeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
-        throw new NotFoundError('Карточка не найдена');
+        next(new NotFoundError('Карточка не найдена'));
       }
 
       res.status(SUCCESS_OK_CODE).send(card);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        throw new BadRequestError('Карточка не найдена');
+        next(new BadRequestError('Карточка не найдена'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 const dislikeCard = (req, res, next) => {
@@ -91,19 +87,18 @@ const dislikeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
-        throw new NotFoundError('Карточка не найдена');
+        next(new NotFoundError('Карточка не найдена'));
       }
 
       res.status(SUCCESS_OK_CODE).send(card);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        throw new BadRequestError('Карточка не найдена');
+        next(new BadRequestError('Карточка не найдена'));
       }
 
-      throw new InternalServerError('Произошла ошибка');
-    })
-    .catch(next);
+      next(new InternalServerError('Произошла ошибка'));
+    });
 };
 
 module.exports = {
