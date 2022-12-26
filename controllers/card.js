@@ -6,7 +6,6 @@ const BadRequestError = require('../errors/bad-request-error');
 const ForbiddenError = require('../errors/forbidden-error');
 const InternalServerError = require('../errors/internal-server-error');
 const NotFoundError = require('../errors/not-found-error');
-const ConflictError = require('../errors/conflict-error');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -26,11 +25,6 @@ const createCard = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
-        return;
-      }
-
-      if (error.code === 11000) {
-        next(new ConflictError('Пользователь с данным email уже существует'));
         return;
       }
 
