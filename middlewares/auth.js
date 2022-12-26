@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { UNAUTHORIZED_ERROR_CODE } = require('../utils/constants');
+const UnauthorizedError = require('../errors/unauthorized-error');
 
 const checkToken = (token) => {
   if (!token) {
@@ -22,7 +22,7 @@ const checkAuth = (req, res, next) => {
     return next();
   }
 
-  return res.status(UNAUTHORIZED_ERROR_CODE).send({ message: 'Неправильные почта или пароль' });
+  return next(new UnauthorizedError('Неправильные почта или пароль'));
 };
 
 module.exports = { checkAuth };

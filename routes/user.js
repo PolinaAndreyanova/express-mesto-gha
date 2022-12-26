@@ -15,7 +15,7 @@ router.get('/me', getMe);
 
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24),
+    userId: Joi.string().hex().alphanum().length(24),
   }),
 }), getUser);
 
@@ -28,7 +28,7 @@ router.patch('/me', celebrate({
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required(),
+    avatar: Joi.string().required().regex(/^(http|https):\/\/(www. |)([\w|-]+)\.([A-z]{2,})/),
   }),
 }), updateUserAvatar);
 

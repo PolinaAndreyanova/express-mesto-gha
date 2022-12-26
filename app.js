@@ -10,7 +10,7 @@ const { login, createUser } = require('./controllers/user');
 
 const { checkAuth } = require('./middlewares/auth');
 
-const { NOT_FOUND_ERROR_CODE } = require('./utils/constants');
+const NotFoundError = require('./errors/not-found-error');
 
 const { PORT = 3000 } = process.env;
 
@@ -35,12 +35,12 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().regex(/^(http|https):\/\/(www. |)([\w|-]+)\.([A-z]{2,})/),
   }),
 }), createUser);
 
-app.use('*', (req, res) => {
-  res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Путь не найден' });
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Путь не найден'));
 });
 
 app.use(errors());
