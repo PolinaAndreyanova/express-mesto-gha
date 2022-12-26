@@ -31,10 +31,10 @@ const getUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return next(new BadRequestError('Пользователь не найден'));
+        next(new BadRequestError('Пользователь не найден'));
       }
 
-      return next(new InternalServerError('Произошла ошибка'));
+      // return next(new InternalServerError('Произошла ошибка'));
     });
 };
 
@@ -51,10 +51,10 @@ const getMe = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return next(new BadRequestError('Пользователь не найден'));
+        next(new BadRequestError('Пользователь не найден'));
       }
 
-      return next(new InternalServerError('Произошла ошибка'));
+      // return next(new InternalServerError('Произошла ошибка'));
     });
 };
 
@@ -78,14 +78,14 @@ const createUser = (req, res, next) => {
       .then((user) => res.status(SUCCESS_CREATED_CODE).send(user))
       .catch((error) => {
         if (error.name === 'ValidationError') {
-          return next(new BadRequestError('Переданы некорректные данные'));
+          next(new BadRequestError('Переданы некорректные данные'));
         }
 
         if (error.code === 11000) {
-          return next(new ConflictError('Пользователь с данным email уже существует'));
+          next(new ConflictError('Пользователь с данным email уже существует'));
         }
 
-        return next(new InternalServerError('Произошла ошибка'));
+        // return next(new InternalServerError('Произошла ошибка'));
       }));
 };
 
@@ -99,14 +99,14 @@ const updateUserInfo = (req, res, next) => {
         return next(new NotFoundError('Пользователь не найден'));
       }
 
-      res.status(SUCCESS_OK_CODE).send(user);
+      return res.status(SUCCESS_OK_CODE).send(user);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
 
-      return next(new InternalServerError('Произошла ошибка'));
+      // return next(new InternalServerError('Произошла ошибка'));
     });
 };
 
@@ -124,10 +124,10 @@ const updateUserAvatar = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       }
 
-      return next(new InternalServerError('Произошла ошибка'));
+      // return next(new InternalServerError('Произошла ошибка'));
     });
 };
 
@@ -137,7 +137,7 @@ const login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (user === null) {
-        return next(new UnauthorizedError('Неправильные почта или пароль'));
+        next(new UnauthorizedError('Неправильные почта или пароль'));
       }
 
       bcrypt.compare(password, user.password)
@@ -149,10 +149,10 @@ const login = (req, res, next) => {
           const token = jwt.sign({ _id: user._id }, 'secret-token-key', { expiresIn: '7d' });
 
           return res.status(SUCCESS_OK_CODE).send({ jwt: token });
-        })
-        .catch(() => {
-          next(new InternalServerError('Произошла ошибка'));
         });
+        // .catch(() => {
+        //   next(new InternalServerError('Произошла ошибка'));
+        // });
     })
     .catch(() => {
       next(new InternalServerError('Произошла ошибка'));
