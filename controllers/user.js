@@ -24,6 +24,7 @@ const getUser = (req, res, next) => {
     .then((user) => {
       if (user === null) {
         next(new NotFoundError('Пользователь не найден'));
+        return;
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
@@ -31,6 +32,7 @@ const getUser = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'CastError') {
         next(new BadRequestError('Пользователь не найден'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
@@ -44,6 +46,7 @@ const getMe = (req, res, next) => {
     .then((user) => {
       if (user === null) {
         next(new NotFoundError('Пользователь не найден'));
+        return;
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
@@ -51,6 +54,7 @@ const getMe = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'CastError') {
         next(new BadRequestError('Пользователь не найден'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
@@ -78,6 +82,7 @@ const createUser = (req, res, next) => {
       .catch((error) => {
         if (error.name === 'ValidationError') {
           next(new BadRequestError('Переданы некорректные данные'));
+          return;
         }
 
         next(new InternalServerError('Произошла ошибка'));
@@ -92,6 +97,7 @@ const updateUserInfo = (req, res, next) => {
     .then((user) => {
       if (user === null) {
         next(new NotFoundError('Пользователь не найден'));
+        return;
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
@@ -99,6 +105,7 @@ const updateUserInfo = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
@@ -113,6 +120,7 @@ const updateUserAvatar = (req, res, next) => {
     .then((user) => {
       if (user === null) {
         next(new NotFoundError('Пользователь не найден'));
+        return;
       }
 
       res.status(SUCCESS_OK_CODE).send(user);
@@ -120,6 +128,7 @@ const updateUserAvatar = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
@@ -133,12 +142,14 @@ const login = (req, res, next) => {
     .then((user) => {
       if (user === null) {
         next(new UnauthorizedError('Неправильные почта или пароль'));
+        return;
       }
 
       bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
             next(new UnauthorizedError('Неправильные почта или пароль'));
+            return;
           }
 
           const token = jwt.sign({ _id: user._id }, 'secret-token-key', { expiresIn: '7d' });

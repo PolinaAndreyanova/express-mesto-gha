@@ -6,6 +6,7 @@ const BadRequestError = require('../errors/bad-request-error');
 const ForbiddenError = require('../errors/forbidden-error');
 const InternalServerError = require('../errors/internal-server-error');
 const NotFoundError = require('../errors/not-found-error');
+const ConflictError = require('../errors/conflict-error');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -25,6 +26,12 @@ const createCard = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
+        return;
+      }
+
+      if (error.code === 11000) {
+        next(new ConflictError('Пользователь с данным email уже существует'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
@@ -38,10 +45,12 @@ const deleteCard = (req, res, next) => {
     .then((card) => {
       if (card === null) {
         next(new NotFoundError('Карточка не найдена'));
+        return;
       }
 
       if (card.owner._id.toString() !== req.user._id) {
         next(new ForbiddenError('Доступ запрещён'));
+        return;
       }
 
       Card.findByIdAndRemove(_id)
@@ -53,6 +62,7 @@ const deleteCard = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'CastError') {
         next(new BadRequestError('Карточка не найдена'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
@@ -67,6 +77,7 @@ const likeCard = (req, res, next) => {
     .then((card) => {
       if (card === null) {
         next(new NotFoundError('Карточка не найдена'));
+        return;
       }
 
       res.status(SUCCESS_OK_CODE).send(card);
@@ -74,6 +85,7 @@ const likeCard = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'CastError') {
         next(new BadRequestError('Карточка не найдена'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
@@ -88,6 +100,7 @@ const dislikeCard = (req, res, next) => {
     .then((card) => {
       if (card === null) {
         next(new NotFoundError('Карточка не найдена'));
+        return;
       }
 
       res.status(SUCCESS_OK_CODE).send(card);
@@ -95,6 +108,7 @@ const dislikeCard = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'CastError') {
         next(new BadRequestError('Карточка не найдена'));
+        return;
       }
 
       next(new InternalServerError('Произошла ошибка'));
