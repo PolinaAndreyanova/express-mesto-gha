@@ -1,20 +1,18 @@
 [![Tests](../../actions/workflows/tests-13-sprint.yml/badge.svg)](../../actions/workflows/tests-13-sprint.yml) [![Tests](../../actions/workflows/tests-14-sprint.yml/badge.svg)](../../actions/workflows/tests-14-sprint.yml)
-# Проект Mesto фронтенд + бэкенд
+# Бэкенд проекта Место
 
+**Описание**
 
-## Ссылка на репозиторий
+Бэкенд часть проекта [Место](https://github.com/PolinaAndreyanova/react-mesto-auth)
 
-https://github.com/PolinaAndreyanova/express-mesto-gha
+**Функциональность**
+* Авторизация и регистрация пользователя
+* Редактирование профиля
+* Создание карточкек с фотографиями
+* Лайк карточек
+* Удаление карточек
 
-## Директории
-
-`/routes` — папка с файлами роутера  
-`/controllers` — папка с файлами контроллеров пользователя и карточки   
-`/models` — папка с файлами описания схем пользователя и карточки  
-  
-Остальные директории вспомогательные, создаются при необходимости разработчиком
-
-## Запуск проекта
-
-`npm run start` — запускает сервер   
-`npm run dev` — запускает сервер с hot-reload
+**Стек технологий**
+* JavaScript
+* Node.js
+* MongoDB
